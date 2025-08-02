@@ -1,78 +1,116 @@
 import streamlit as st
+import streamlit.components.v1 as components
+import urllib.parse
 from streamlit_mermaid import st_mermaid
 
-st.subheader("Plant Disease Identification System (PDIS)", divider = "grey")
 
+# Page setup
+st.set_page_config(
+    page_title="About - PDIS",
+    page_icon="🌱",
+    layout="wide"
+)
 
+# Title
+st.header("🌿 Plant Disease Identification System", divider = 'grey')
+
+# Use Case
+st.subheader("🧩 Use Case")
 st.markdown("""
-# About Plant Disease Identification System (PDIS)
-
-Welcome to PDIS, a system designed to help identify plant diseases using image analysis and advanced language models. This application aims to assist farmers, gardeners, and plant enthusiasts in diagnosing plant health issues quickly and efficiently.
-
-
-## Use Case
-
-PDIS addresses the critical need for rapid and accurate plant disease identification. Early detection is crucial for effective treatment and preventing widespread crop damage. This system provides a user-friendly interface for uploading images of plants, receiving an analysis of the potential disease, and obtaining information on potential remedies.
-
-
-## Approach
-
-The PDIS application employs a two-pronged approach:
-
-1. **Image-based Disease Detection:** A pre-trained Convolutional Neural Network (CNN), specifically ResNet50, is fine-tuned on a plant disease dataset (sourced from Kaggle). This model analyzes uploaded images to identify potential diseases based on visual patterns.
-
-2. **AI-powered Diagnosis and Remedy Suggestion:**  A large language model (LLM) is integrated to provide detailed diagnostic information and suggestions for treatment based on the predicted disease. The LLM receives the detected disease and plant species as input, generating a human-readable response.  The LLM can be selected from several providers (e.g., Google's Gemini, Ollama models).
-
-
-## Model Training (Disease Detection)
-
-The disease detection model is trained using a dataset of plant images with associated labels (disease type).  The training process involves:
-
-1. **Data Augmentation:**  Random horizontal flips and rotations are applied to the training images to increase the dataset size and improve model robustness.
-
-2. **Pre-trained Model:**  A pre-trained ResNet50 model is used as a base, leveraging its learned features from a large-scale image dataset (ImageNet).  This significantly reduces training time and improves performance.
-
-3. **Fine-tuning:** Only the final fully connected layers of ResNet50 are unfrozen and trained on the plant disease dataset.  The pre-trained weights of the convolutional layers are kept fixed to preserve the learned features.
-
-4. **Optimization:** The Adam optimizer is used to update the weights of the final layers, minimizing the cross-entropy loss function.
-
-5. **Model Saving:** The trained model is saved for later use in the application, allowing for quick and efficient disease detection.
-
-
-## Technology Stack
-
-* **Frontend:** Streamlit
-* **Backend:** PyTorch, Langchain
-* **LLM Providers:** Google AI, Ollama (and potentially others)
-* **Image Processing:** PIL (Pillow)
-* **Model:** ResNet50
-
-
-This system continuously learns and improves as more data is added, enhancing its accuracy and reliability in identifying plant diseases.
-            """)
-
-
-st_mermaid("""
-graph LR
-    A[User] --> B(Upload Image);
-    B --> C{ResNet50 Model};
-    C --> D[Disease Prediction];
-    D --> E{Plant Identification};
-    subgraph "LLM Interaction"
-        E --> F(Prompt Generation);
-        F --> G{LLM (e.g., Gemini, Ollama)};
-        G --> H[Diagnosis & Remedy];
-    end
-    H --> I(Display Results);
-    I --> A;
+In agriculture, timely detection of plant diseases is crucial to prevent crop loss and maintain food quality. Traditional methods are time-consuming and require expert knowledge.  
+**PDIS (Plant Disease Identification System)** is an AI-powered application that allows users to upload images of plant leaves and get real-time disease analysis, diagnosis, and treatment suggestions using deep learning and LLMs.
 """)
 
-st.markdown("""Explanation of Diagram:
+# Approach
+st.subheader("🔬 Approach")
+st.markdown("""
+**PDIS** integrates:
+- 🎯 **Computer Vision** to identify plant diseases from images.
+- 🧠 **Large Language Models (LLMs)** to provide detailed disease explanations and care suggestions.
+- 🖥️ **Streamlit frontend** for a user-friendly interface.
 
-Image Upload (Streamlit): The user uploads an image of a plant through the Streamlit interface.
-Disease Detection (ResNet50): The uploaded image is preprocessed and fed into the ResNet50 model, which predicts the disease.
-Disease & Plant Identification: The model's output (predicted disease) is combined with a plant type (either predicted or user-specified).
-LLM (e.g., Gemini, Ollama): This information is sent as a prompt to the chosen LLM.
-Diagnosis & Remedy Suggestion: The LLM processes the prompt and generates a detailed diagnosis and treatment suggestions.
-Streamlit Output: The results (disease identification, diagnosis, and remedy) are displayed to the user in the Streamlit application.
+**Workflow:**
+1. Users upload plant images via a web UI.
+2. A deep learning model (ResNet50) classifies the plant and detects disease.
+3. A large language model generates a natural language diagnosis and recommendation.
+4. Users can select different model providers (Groq, Google Gemini, Ollama).
 """)
+
+# Model Training
+st.subheader("🧠 Model Training")
+st.markdown("""
+The disease detection model was trained using the [PlantVillage dataset](https://www.kaggle.com/datasets/emmarex/plantdisease) from Kaggle, which includes over 54,000 labeled images of healthy and diseased leaves.
+
+**Training Highlights:**
+- 📚 **Dataset**: Multi-class folder structure
+- 🖼 **Augmentation**: Resize, horizontal flip, rotation, normalization
+- 🧱 **Model**: Pretrained ResNet-50
+- 🔍 **Loss**: CrossEntropyLoss
+- ⚙️ **Optimizer**: Adam
+- 💾 **Saved as**: `plant_disease_full_model.pth`
+
+```python
+model = models.resnet50(pretrained=True)
+for param in model.parameters():
+    param.requires_grad = False
+
+model.fc = nn.Sequential(
+    nn.Linear(model.fc.in_features, 1024),
+    nn.ReLU(),
+    nn.Dropout(0.5),
+    nn.Linear(1024, num_classes)
+)
+""")
+
+
+st.subheader("⚙️ Technologies Used")
+st.markdown("""
+
+Frontend: Streamlit
+
+Image Processing: PIL, torchvision.transforms
+
+Model Training: PyTorch, ResNet-50
+
+LLM Integration: LangChain, Groq, Gemini, Ollama
+
+Utility: TQDM, dotenv, Pathlib
+""")
+
+
+st.subheader("🧭 Architecture Diagram")
+st.markdown("Below is the architecture of the Plant Disease Identification System:")
+
+# Mermaid diagram as image
+st_mermaid('''
+graph TD
+A[🌐 Streamlit Frontend<br>• Image Upload UI<br>• Config & Analysis View<br>• Diagnose Button] --> B[🧠 Inference Engine<br>• Image Preprocessing<br>• Load ResNet50 Model<br>• Predict Disease]
+B --> C[🔗 LangChain<br>• Prompt Construction<br>• Streamed Responses]
+C --> D1[🤖 Groq<br>LLM: LLaMA, Mistral, etc.]
+C --> D2[🤖 Google Gemini<br>LLM: Gemini 1.5 Flash]
+C --> D3[🤖 Ollama<br>LLM: Local models]
+A --> E[🛠 Model Selector UI<br>• Choose LLM Provider<br>• Select Model]
+''')
+
+# Encode for Mermaid.ink
+# encoded = urllib.parse.quote(mermaid_code)
+# mermaid_img_url = f"https://mermaid.ink/img/{encoded}"
+
+# # Display diagram
+# st.image(mermaid_img_url, caption="PDIS System Architecture (Mermaid)", use_container_width=True)
+
+
+
+# Final Notes
+st.subheader("👩‍🌾 Final Notes")
+st.markdown("""
+
+🧪 More plant types and diseases can be added to the dataset to increase scope.
+
+🔄 The current system can be enhanced with multilingual support.
+
+📈 Higher accuracy can be achieved with more training epochs and improved datasets.
+
+☁️ PDIS can be deployed to cloud platforms for field-level integration.
+
+<center>2025 Plant Disease Identification System (PDIS)</center> """, unsafe_allow_html=True)
