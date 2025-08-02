@@ -1,0 +1,13 @@
+torch
+ollama
+ipykernel
+streamlit
+langchain
+setuptools
+torchvision
+python-dotenv
+langchain-groq
+langchain-ollama
+langchain-google-genai
+
+-e .
