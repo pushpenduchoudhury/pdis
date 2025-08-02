@@ -93,7 +93,7 @@ uploaded_file = input_col.file_uploader(
 
 col1, col2, col3 = input_col.columns([0.3, 0.3, 0.4])
 
-with input_col.expander("⚙️ Model Config"):
+with input_col.expander(":grey[⚙️ Model Config]"):
     st.markdown("#####  Disease Detection Model")
     st.selectbox("Disease Detection Model", options = os.listdir(conf.MODEL_DIR), label_visibility = "collapsed")
     st.markdown(':grey[Model Accuracy:]<br><hr>', unsafe_allow_html = True)
@@ -150,14 +150,14 @@ def detect_disease(image):
     #     _, predicted = torch.max(outputs, 1)
 
     # predicted_class = conf.DISEASE_CLASSES[predicted.item()]
-    predicted_class = "Tomato__healthy"
+    predicted_class = "Tomato__blight"
     return predicted_class
 
 
 
 image_preview_col, diagnosis_col = output_col.columns([0.2, 0.8])
 image_container = image_preview_col.container(height = 190, border = False)
-analysis_container = diagnosis_col.container(height = 190, border = False)
+analysis_container = diagnosis_col.container(height = 190, border = True)
 diagnosis_container = output_col.container(height = 310, border = True)
 analysis_container.subheader(":blue[Analysis]", divider = "red" if st.session_state.disease_detected else "grey", anchor = False)
 diagnosis_container.subheader(":blue[Diagnosis]", divider = "grey", anchor = False)
@@ -189,9 +189,11 @@ def analyze():
     if "healthy" in st.session_state.disease:
         st.session_state.analysis_messages["analysis"].append(f'<span style="font-size: 20px; color: grey;"> Plant:</span> <span style="font-size: 22px;">{st.session_state.plant}</span> <br> <span style="font-size: 20px; color: grey;">Condition:</span> <span style="font-size: 25px; color: green;">**Healthy**</span>')
         st.session_state.disease_detected = False
+        st.session_state.analysis_messages["diagnosis"].append('<span style="display: block; text-align:center;color: grey">(No diagnosis required)</span>')
     else:
         st.session_state.analysis_messages["analysis"].append(f'<span style="font-size: 20px; color: grey;"> Plant:</span> <span style="font-size: 22px;">{st.session_state.plant}</span> <br> <span style="font-size: 20px; color: grey;">Condition:</span> <span style="font-size: 25px; color: red;">**{st.session_state.disease.title()}** detected...!</span>')
         st.session_state.disease_detected = True
+        st.session_state.analysis_messages["diagnosis"].append('<span style="display: block; text-align:center;color: grey">(Click on "Diagnose" button for more details on the disease)</span>')
         
 for message in st.session_state.analysis_messages["analysis"]:
     analysis_container.markdown(message, unsafe_allow_html = True)
@@ -200,7 +202,7 @@ def diagnose():
     st.session_state.analysis_messages["diagnosis"] = []
     prompt = conf.SYSTEM_PROMPT.format(plant = st.session_state.plant, disease = st.session_state.disease)
     with diagnosis_container:
-        with st.spinner("Checking for remedy"):
+        with st.spinner("Diagnosing disease..."):
             message_placeholder = st.empty()
             full_response = ""
             llm = get_llm(model, model_provider)
@@ -209,7 +211,7 @@ def diagnose():
                 message_placeholder.markdown(full_response + "▌")
         message_placeholder.markdown(full_response)
         st.session_state.analysis_messages["diagnosis"].append(full_response)
-
+        
 for message in st.session_state.analysis_messages["diagnosis"]:    
     diagnosis_container.markdown(message, unsafe_allow_html = True)
     
@@ -221,6 +223,7 @@ if analyze_button:
 diagnose_button = col2.button("Diagnose", use_container_width = True, disabled = not st.session_state.disease_detected, type = "primary")
 if diagnose_button:
     diagnose()
+    st.rerun()
     
 
     

@@ -8,6 +8,7 @@ torchvision
 python-dotenv
 langchain-groq
 langchain-ollama
+streamlit-mermaid
 langchain-google-genai
 
 -e .
