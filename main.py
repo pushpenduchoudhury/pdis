@@ -8,8 +8,8 @@ load_dotenv()
 
 # Set Page Config
 st.set_page_config(
-    page_title = "GenAI Hub",
-    page_icon = "🤖",
+    page_title = "AgriAI",
+    page_icon = "🌾",
     layout = "wide",
     initial_sidebar_state = "collapsed"
 )
@@ -33,7 +33,11 @@ st.markdown(
 
 pages = {
         "🏠︎ Home": [st.Page(Path(conf.PAGES_DIR, "home.py"), title = "Homepage", icon = ":material/home:", default = True)],
-        "📰 Apps" : [st.Page(Path(conf.PAGES_DIR, "pdis.py"), title = "Plant Disease Identification", icon = ":material/coronavirus:")],
+        "📰 Apps" : [
+                        st.Page(Path(conf.PAGES_DIR, "pdis.py"), title = "Plant Disease Identification", icon = ":material/coronavirus:"),
+                        st.Page(Path(conf.PAGES_DIR, "harvest_analytics.py"), title = "Yield & Weather Prediction Analytics", icon = ":material/agriculture:"),
+                        st.Page(Path(conf.PAGES_DIR, "soil_monitor.py"), title = "Soil Monitor", icon = ":material/landslide:"),
+                    ],
         "❔ Help" : [st.Page(Path(conf.PAGES_DIR, "about.py"), title = "About", icon = ":material/info:")],
 }
 

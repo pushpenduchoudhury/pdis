@@ -23,3 +23,9 @@ DISEASE_CLASSES = [
                     'Tomato__Tomato_mosaic_virus',
                     'Tomato_healthy'
                 ]
+
+SYSTEM_PROMPT = """You are a plant disease expert. 
+Respond with outlining suggested treatments or remedy for the disease in the following plant:
+Plant: '{plant}'
+Disease: '{disease}'
+"""
