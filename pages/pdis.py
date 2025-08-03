@@ -60,12 +60,7 @@ def get_ollama_models() -> list:
     model_list = [i['model'] for i in llm['models']]
     return model_list
 
-available_models = {
-    "groq" : ["llama3-8b-8192", "llama-3.1-8b-instant", "llama-3.3-70b-versatile", "llama3-70b-8192", "deepseek-r1-distill-llama-70b", "gemma2-9b-it", "mistral-saba-24b", "qwen/qwen3-32b", "qwen-qwq-32b"],
-    "google_genai" : ["gemini-1.5-flash"],
-    "ollama" : [],
-}
-
+available_models = conf.AVAILABLE_MODELS
 
 input_col, output_col = st.columns([0.3, 0.7])
 
@@ -94,12 +89,12 @@ uploaded_file = input_col.file_uploader(
 col1, col2, col3 = input_col.columns([0.3, 0.3, 0.4])
 
 with input_col.expander(":grey[⚙️ Model Config]"):
-    st.markdown("#####  Disease Detection Model")
+    st.markdown("#####  :grey[Disease Detection Model]")
     st.selectbox("Disease Detection Model", options = os.listdir(conf.MODEL_DIR), label_visibility = "collapsed")
     st.markdown(':grey[Model Accuracy:]<br><hr>', unsafe_allow_html = True)
     
     col3, col4 = st.columns([0.2, 0.8])
-    col3.markdown("#####  LLM:")
+    col3.markdown("#####  :grey[LLM:]")
     model_provider = col4.radio("Model Provider", options = available_models.keys(), horizontal = True, label_visibility = "collapsed")
 
     if model_provider == "ollama":

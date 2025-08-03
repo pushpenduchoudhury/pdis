@@ -29,3 +29,9 @@ Respond with outlining suggested treatments or remedy for the disease in the fol
 Plant: '{plant}'
 Disease: '{disease}'
 """
+
+AVAILABLE_MODELS = {
+    "groq" : ["llama3-8b-8192", "llama-3.1-8b-instant", "llama-3.3-70b-versatile", "llama3-70b-8192", "deepseek-r1-distill-llama-70b", "gemma2-9b-it", "mistral-saba-24b", "qwen/qwen3-32b", "qwen-qwq-32b"],
+    "google_genai" : ["gemini-1.5-flash"],
+    "ollama" : [],
+}
