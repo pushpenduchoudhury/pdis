@@ -44,8 +44,18 @@ st.set_page_config(
     initial_sidebar_state = "collapsed"
 )
 
-if "session_id" not in st.session_state:
-    st.session_state.session_id = str(uuid.uuid4())
+st.markdown(
+    f"""
+<style>
+    .st-emotion-cache-595tnf:before {{
+        content: "𖡎 PDIS";
+        font-weight: bold;
+        font-size: xx-large;
+    }}
+</style>""",
+        unsafe_allow_html=True,
+    )
+
 
 # Set Title
 title_col = st.columns([0.8, 12, 0.5])

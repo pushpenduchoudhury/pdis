@@ -18,19 +18,6 @@ st.set_page_config(
 if "session_id" not in st.session_state:
     st.session_state.session_id = str(uuid.uuid4())
     
-st.markdown(
-    f"""
-<style>
-    .st-emotion-cache-1xgtwnd:before {{
-        content: "𖡎 PDIS";
-        font-weight: bold;
-        font-size: xx-large;
-    }}
-</style>""",
-        unsafe_allow_html=True,
-    )
-
-
 pages = {
         "🏠︎ Home": [st.Page(Path(conf.PAGES_DIR, "home.py"), title = "Homepage", icon = ":material/home:", default = True)],
         "📰 Apps" : [
