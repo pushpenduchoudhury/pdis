@@ -25,7 +25,7 @@ DISEASE_CLASSES = [
                 ]
 
 SYSTEM_PROMPT = """You are a plant disease expert. 
-Respond with outlining suggested treatments or remedy for the disease in the following plant:
+Respond with outlining suggested treatments or remedy, suitable herbicides/fungicides etc. and care instructions for the disease in the following plant:
 Plant: '{plant}'
 Disease: '{disease}'
 """

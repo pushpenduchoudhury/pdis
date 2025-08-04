@@ -161,6 +161,7 @@ def detect_disease(image):
 
     # predicted_class = conf.DISEASE_CLASSES[predicted.item()]
     predicted_class = "Tomato__blight"
+    # predicted_class = "Tomato__healthy"
     return predicted_class
 
 
@@ -236,7 +237,7 @@ if analyze_button:
 diagnose_button = col2.button("Diagnose", use_container_width = True, disabled = not st.session_state.disease_detected, type = "primary")
 if diagnose_button:
     diagnose()
-    # st.rerun()
+    st.rerun()
 
 
 auto_diagnose = col3.toggle("Auto Diagnose")
