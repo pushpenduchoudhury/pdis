@@ -1,13 +1,15 @@
 import os
+import uuid
 import torch
 from PIL import Image
 import streamlit as st
 from pathlib import Path
-from dotenv import load_dotenv
-from langchain.chat_models import init_chat_model
-from torchvision import transforms
 import config.conf as conf
+from dotenv import load_dotenv
+from lib.utils import key_decode
 import torchvision.models.resnet
+from torchvision import transforms
+from langchain.chat_models import init_chat_model
 torch.serialization.add_safe_globals([torchvision.models.resnet.ResNet])
 load_dotenv()
 
@@ -18,11 +20,11 @@ with open(CSS_FILE) as f:
 
 st.markdown(f'<style>{css}</style>', unsafe_allow_html = True)
 
-os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY")
-os.environ["GROQ_API_KEY"] = os.getenv("GROQ_API_KEY")
+os.environ["GOOGLE_API_KEY"] = key_decode(os.getenv("B64_GOOGLE_API_KEY"))
+os.environ["GROQ_API_KEY"] = key_decode(os.getenv("B64_GROQ_API_KEY"))
 
 def reset_messages():
-    st.session_state.analysis_messages = {"image": [f'<div style="font-size: 25px; color: grey; text-align: center;"> Upload an Image to Analyse </div>'],
+    st.session_state.analysis_messages = {"image": ["""<div style="display: flex; font-size: 24px; color: grey; justify-content: center; align-items: center; text-align: center; height: 165px; overflow: hidden;"> <p>Upload an Image to Analyse</p></div>"""],
                                           "analysis" : [],
                                           "diagnosis" : []
                                           }
@@ -41,6 +43,9 @@ st.set_page_config(
     layout = "wide",
     initial_sidebar_state = "collapsed"
 )
+
+if "session_id" not in st.session_state:
+    st.session_state.session_id = str(uuid.uuid4())
 
 # Set Title
 title_col = st.columns([0.8, 12, 0.5])
@@ -65,7 +70,7 @@ available_models = conf.AVAILABLE_MODELS
 input_col, output_col = st.columns([0.3, 0.7])
 
 if "analysis_messages" not in st.session_state:
-    st.session_state.analysis_messages = {"image": [f'<div style="font-size: 25px; color: grey; text-align: center;"> Upload an Image to Analyse </div>'],
+    st.session_state.analysis_messages = {"image": ["""<div style="display: flex; font-size: 24px; color: grey; justify-content: center; align-items: center; height: 165px; overflow: hidden;"> <p>Upload an Image to Analyse</p></div>"""],
                                           "analysis" : [],
                                           "diagnosis" : []
                                           }
@@ -93,9 +98,9 @@ with input_col.expander(":grey[⚙️ Model Config]"):
     st.selectbox("Disease Detection Model", options = os.listdir(conf.MODEL_DIR), label_visibility = "collapsed")
     st.markdown(':grey[Model Accuracy:]<br><hr>', unsafe_allow_html = True)
     
-    col3, col4 = st.columns([0.2, 0.8])
-    col3.markdown("#####  :grey[LLM:]")
-    model_provider = col4.radio("Model Provider", options = available_models.keys(), horizontal = True, label_visibility = "collapsed")
+    col4, col5 = st.columns([0.2, 0.8])
+    col4.markdown("#####  :grey[LLM:]")
+    model_provider = col5.radio("Model Provider", options = available_models.keys(), horizontal = True, label_visibility = "collapsed")
 
     if model_provider == "ollama":
         try:
@@ -151,9 +156,9 @@ def detect_disease(image):
 
 
 image_preview_col, diagnosis_col = output_col.columns([0.2, 0.8])
-image_container = image_preview_col.container(height = 190, border = False)
-analysis_container = diagnosis_col.container(height = 190, border = True)
-diagnosis_container = output_col.container(height = 310, border = True)
+image_container = image_preview_col.container(height = 185, border = True)
+analysis_container = diagnosis_col.container(height = 185, border = True)
+diagnosis_container = output_col.container(height = 315, border = True)
 analysis_container.subheader(":blue[Analysis]", divider = "red" if st.session_state.disease_detected else "grey", anchor = False)
 diagnosis_container.subheader(":blue[Diagnosis]", divider = "grey", anchor = False)
 
@@ -170,16 +175,20 @@ for message in st.session_state.analysis_messages["image"]:
     if len(st.session_state.analysis_messages["image"]) == 1 and uploaded_file is None:
         image_container.markdown(message, unsafe_allow_html = True)
     else:
-        image_container.image(message, width = 150, caption = ":grey[Subject Plant Image]")
-        
+        image_container.image(message, width = 150,)
+
+def disease_class_parser(predicted_class):
+    plant = predicted_class.split("___")[0] if "___" in predicted_class else predicted_class.split("__")[0] if "__" in predicted_class else predicted_class.split("_")[0]
+    disease = predicted_class.split("___")[1] if "___" in predicted_class else predicted_class.split("__")[1] if "__" in predicted_class else predicted_class.split("_")[1]
+    return plant, disease
+
 def analyze():
     st.session_state.analysis_messages["analysis"] = []
     st.session_state.analysis_messages["diagnosis"] = []
     with analysis_container:
         with st.spinner("Analyzing..."):
             predicted_class = detect_disease(image = uploaded_file)
-            st.session_state.plant = predicted_class.split("___")[0] if "___" in predicted_class else predicted_class.split("__")[0] if "__" in predicted_class else predicted_class.split("_")[0]
-            st.session_state.disease = predicted_class.split("___")[1] if "___" in predicted_class else predicted_class.split("__")[1] if "__" in predicted_class else predicted_class.split("_")[1]
+            st.session_state.plant, st.session_state.disease = disease_class_parser(predicted_class)
         
     if "healthy" in st.session_state.disease:
         st.session_state.analysis_messages["analysis"].append(f'<span style="font-size: 20px; color: grey;"> Plant:</span> <span style="font-size: 22px;">{st.session_state.plant}</span> <br> <span style="font-size: 20px; color: grey;">Condition:</span> <span style="font-size: 25px; color: green;">**Healthy**</span>')
@@ -190,36 +199,59 @@ def analyze():
         st.session_state.disease_detected = True
         st.session_state.analysis_messages["diagnosis"].append('<span style="display: block; text-align:center;color: grey">(Click on "Diagnose" button for more details on the disease)</span>')
         
-for message in st.session_state.analysis_messages["analysis"]:
-    analysis_container.markdown(message, unsafe_allow_html = True)
 
 def diagnose():
     st.session_state.analysis_messages["diagnosis"] = []
     prompt = conf.SYSTEM_PROMPT.format(plant = st.session_state.plant, disease = st.session_state.disease)
     with diagnosis_container:
-        with st.spinner("Diagnosing disease..."):
-            message_placeholder = st.empty()
-            full_response = ""
-            llm = get_llm(model, model_provider)
-            for response in llm.stream(prompt):
-                full_response += response.content
-                message_placeholder.markdown(full_response + "▌")
-        message_placeholder.markdown(full_response)
+        try:
+            with st.spinner("Diagnosing disease..."):
+                message_placeholder = st.empty()
+                full_response = ""
+                llm = get_llm(model, model_provider)
+                for response in llm.stream(prompt):
+                    full_response += response.content
+                    message_placeholder.markdown(full_response + "▌")
+        except Exception as e:
+            full_response = str(f":red[{e}]")
+        # message_placeholder.markdown(full_response)
         st.session_state.analysis_messages["diagnosis"].append(full_response)
         
-for message in st.session_state.analysis_messages["diagnosis"]:    
-    diagnosis_container.markdown(message, unsafe_allow_html = True)
-    
+
 analyze_button = col1.button("Analyze", use_container_width = True, disabled = False if uploaded_file is not None else True, type = "secondary")
 if analyze_button:
     analyze()
-    st.rerun()
+    # st.rerun()
     
 diagnose_button = col2.button("Diagnose", use_container_width = True, disabled = not st.session_state.disease_detected, type = "primary")
 if diagnose_button:
     diagnose()
-    st.rerun()
-    
+    # st.rerun()
 
-    
 
+auto_diagnose = col3.toggle("Auto Diagnose")
+if auto_diagnose:
+    if len(st.session_state.analysis_messages["diagnosis"]) == 0:
+        if uploaded_file:
+            analyze()
+            for message in st.session_state.analysis_messages["analysis"]:
+                analysis_container.markdown(message, unsafe_allow_html = True)
+            diagnose()
+            # for message in st.session_state.analysis_messages["diagnosis"]:    
+            #     diagnosis_container.markdown(message, unsafe_allow_html = True)
+            # st.rerun()
+    elif uploaded_file:
+        analyze()
+        for message in st.session_state.analysis_messages["analysis"]:
+            analysis_container.markdown(message, unsafe_allow_html = True)
+        diagnose()
+        
+for message in st.session_state.analysis_messages["analysis"]:
+    analysis_container.markdown(message, unsafe_allow_html = True)
+
+for message in st.session_state.analysis_messages["diagnosis"]:    
+    diagnosis_container.markdown(message, unsafe_allow_html = True)
+
+with st.sidebar:
+    with st.expander("𓆣 Debugging"):
+        st.write(st.session_state.analysis_messages)

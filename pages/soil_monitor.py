@@ -1,7 +1,7 @@
 import streamlit as st
 from pathlib import Path
-from dotenv import load_dotenv
 import config.conf as conf
+from dotenv import load_dotenv
 load_dotenv()
 
 

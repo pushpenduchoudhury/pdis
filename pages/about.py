@@ -1,9 +1,7 @@
 import streamlit as st
-import streamlit.components.v1 as components
-import urllib.parse
-from streamlit_mermaid import st_mermaid
 from pathlib import Path
 import config.conf as conf
+from streamlit_mermaid import st_mermaid
 
 CSS_FILE = Path(conf.CONFIG_DIR, "about_style.css")
 with open(CSS_FILE) as f:
@@ -124,15 +122,15 @@ st_mermaid('''graph TD
 subheader("Technologies Used")
 st.markdown("""
 
-Frontend: Streamlit
+:grey[Frontend:] Streamlit
 
-Image Processing: PIL, torchvision.transforms
+:grey[Image Processing:] PIL | torchvision.transforms
 
-Model Training: PyTorch, ResNet-50
+:grey[Model Training:] PyTorch | ResNet-50
 
-LLM Integration: LangChain, Groq, Gemini, Ollama
+:grey[LLM Integration:] LangChain | Groq | Gemini | Ollama
 
-Utility: dotenv, Pathlib
+:grey[Utility:] dotenv | Pathlib
 """)
 
 # Final Notes

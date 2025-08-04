@@ -22,12 +22,12 @@ apps = [
     },
     {"name": "Harvest Analytics",
      "description": "<u>***Harvest Analytics***</u> empowers farmers with data-driven decision-making. Leveraging advanced predictive analytics, we forecast crop yields by integrating real-time weather data, soil conditions, and historical harvest information. Our detailed reports provide insights into optimal harvesting times, potential yield variations, and resource allocation strategies. Track your harvest progress, analyze key performance indicators, and access historical data for continuous improvement and enhanced profitability.",
-     "page": "pdis.py",
+     "page": "harvest_analytics.py",
      "image_icon": "harvest.png",
     },
     {"name": "Soil Monitor",
      "description": "<u>***Soil Monitor***</u> is a precision agriculture app providing real-time insights into soil health. Using sensor data and predictive analytics, it helps farmers optimize irrigation, fertilization, and planting strategies, leading to improved crop yields and reduced input costs. Features include detailed soil moisture maps, nutrient level analysis, and customized recommendations based on specific field conditions and weather forecasts.",
-     "page": "pdis.py",
+     "page": "soil_monitor.py",
      "image_icon": "soil.png",
     },
 ]
@@ -59,7 +59,7 @@ for row in range(app_grid_rows):
                 st.markdown(f'<span style="font-size: 16px; text-align: center;">{apps[app_num]["description"]}</span>', unsafe_allow_html = True)
             
             # App Launch Button
-            if st.button("Launch", key = f"app_{app_num}", disabled = False if app_num == 0 else True):
+            if st.button("Launch", key = f"app_{app_num}"):
                 st.switch_page(Path(conf.PAGES_DIR, apps[app_num]["page"]))
                 
             app_num += 1
