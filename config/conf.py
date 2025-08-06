@@ -13,7 +13,9 @@ LOG_DIR = Path(HOME_DIR, "logs")
 SCRIPTS_DIR = Path(HOME_DIR, "scripts")
 CSS_DIR = Path(HOME_DIR, "css")
 
-DISEASE_DETECTION_MODEL = Path(MODEL_DIR, "plant_disease_full_model.pth")
+DISEASE_DETECTION_MODEL = {"plant_disease_detection_model.pth": {"path" : Path(MODEL_DIR, "plant_disease_detection_model.pth"), 
+                                                                 "accuracy": "12%"}
+                            }
 
 DISEASE_CLASSES = [
                     'Apple___Cedar_apple_rust', 

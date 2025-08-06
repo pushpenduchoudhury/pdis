@@ -1,5 +1,4 @@
 import os
-import uuid
 import torch
 from PIL import Image
 import streamlit as st
@@ -20,6 +19,7 @@ with open(CSS_FILE) as f:
 
 st.markdown(f'<style>{css}</style>', unsafe_allow_html = True)
 
+os.environ['NO_PROXY'] = 'localhost,127.0.0.1,::1'
 os.environ["GOOGLE_API_KEY"] = key_decode(os.getenv("B64_GOOGLE_API_KEY"))
 os.environ["GROQ_API_KEY"] = key_decode(os.getenv("B64_GROQ_API_KEY"))
 
@@ -94,7 +94,6 @@ if "plant" not in st.session_state:
 if "disease" not in st.session_state:
     st.session_state.disease = None
 
-# disease_detected = False
 uploaded_file = input_col.file_uploader(
                                         "Upload an image of a Plant", 
                                         accept_multiple_files = False, 
@@ -105,8 +104,8 @@ col1, col2, col3 = input_col.columns([0.3, 0.3, 0.4])
 
 with input_col.expander(":grey[⚙️ Model Config]"):
     st.markdown("#####  :grey[Disease Detection Model]")
-    st.selectbox("Disease Detection Model", options = os.listdir(conf.MODEL_DIR), label_visibility = "collapsed")
-    st.markdown(':grey[Model Accuracy:]<br><hr>', unsafe_allow_html = True)
+    disease_detection_model = st.selectbox("Disease Detection Model", options = conf.DISEASE_DETECTION_MODEL.keys(), label_visibility = "collapsed")
+    st.markdown(f':grey[Model Accuracy: {conf.DISEASE_DETECTION_MODEL[disease_detection_model]["accuracy"]}]<br><hr>', unsafe_allow_html = True)
     
     col4, col5 = st.columns([0.2, 0.8])
     col4.markdown("#####  :grey[LLM:]")
@@ -151,17 +150,15 @@ def preprocess_image(image_path):
     return image
 
 def detect_disease(image):
-    # input_tensor = preprocess_image(image)
-    # classification_model = torch.load(conf.DISEASE_DETECTION_MODEL, weights_only = False)
-    # classification_model.eval()
+    input_tensor = preprocess_image(image)
+    classification_model = torch.load(conf.DISEASE_DETECTION_MODEL[disease_detection_model]["path"], weights_only = False)
+    classification_model.eval()
 
-    # with torch.no_grad():
-    #     outputs = classification_model(input_tensor)
-    #     _, predicted = torch.max(outputs, 1)
+    with torch.no_grad():
+        outputs = classification_model(input_tensor)
+        _, predicted = torch.max(outputs, 1)
 
-    # predicted_class = conf.DISEASE_CLASSES[predicted.item()]
-    predicted_class = "Tomato__blight"
-    # predicted_class = "Tomato__healthy"
+    predicted_class = conf.DISEASE_CLASSES[predicted.item()]
     return predicted_class
 
 
@@ -225,14 +222,12 @@ def diagnose():
                     message_placeholder.markdown(full_response + "▌")
         except Exception as e:
             full_response = str(f":red[{e}]")
-        # message_placeholder.markdown(full_response)
         st.session_state.analysis_messages["diagnosis"].append(full_response)
         
 
 analyze_button = col1.button("Analyze", use_container_width = True, disabled = False if uploaded_file is not None else True, type = "secondary")
 if analyze_button:
     analyze()
-    # st.rerun()
     
 diagnose_button = col2.button("Diagnose", use_container_width = True, disabled = not st.session_state.disease_detected, type = "primary")
 if diagnose_button:
@@ -247,15 +242,15 @@ if auto_diagnose:
             analyze()
             for message in st.session_state.analysis_messages["analysis"]:
                 analysis_container.markdown(message, unsafe_allow_html = True)
-            diagnose()
-            # for message in st.session_state.analysis_messages["diagnosis"]:    
-            #     diagnosis_container.markdown(message, unsafe_allow_html = True)
-            # st.rerun()
+            if st.session_state.disease_detected:
+                diagnose()
+            
     elif uploaded_file:
         analyze()
         for message in st.session_state.analysis_messages["analysis"]:
             analysis_container.markdown(message, unsafe_allow_html = True)
-        diagnose()
+        if st.session_state.disease_detected:
+            diagnose()
         
 for message in st.session_state.analysis_messages["analysis"]:
     analysis_container.markdown(message, unsafe_allow_html = True)

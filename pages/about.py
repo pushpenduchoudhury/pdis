@@ -67,7 +67,6 @@ The disease detection model was trained using the [New Plant Diseases Dataset](h
 - **Model**: Pretrained ResNet-50
 - **Loss**: CrossEntropyLoss
 - **Optimizer**: Adam
-- **Saved as**: `plant_disease_full_model.pth`
 
 ```python
 model = models.resnet50(pretrained=True)
@@ -80,7 +79,35 @@ model.fc = nn.Sequential(
     nn.Dropout(0.5),
     nn.Linear(1024, num_classes)
 )
-""")
+```
+
+##### :grey[**Steps for Training:**]
+
+1. Data Preparation
+    * Images are organized in folders by class.
+    * Data is augmented with resizing, random flips, and rotations.
+    * Images are normalized to match pretrained model expectations.
+
+2. Model Setup
+    * A ResNet50 model pretrained on ImageNet is used.
+    * All original layers are frozen to retain learned features.
+    * The final classification layer is replaced to match the number of target classes.
+
+3. Training Configuration
+    * Only the new classifier head is trained; the rest of the model remains unchanged.
+    * Cross-entropy loss is used for multi-class classification.
+    * The Adam optimizer updates the classifier's weights.
+
+4. Data Preparation
+    * The model is trained for a set number of epochs.
+    * For each batch:
+        * Images and labels are loaded and processed.
+        * The model predicts class probabilities.
+        * Loss and accuracy are calculated.
+        * The classifier's weights are updated based on the loss.
+    * After each epoch, overall training loss and accuracy are reported.
+
+""", unsafe_allow_html = True)
 
 
 st.markdown("""##### :grey[Model Training Diagram]
@@ -89,38 +116,33 @@ Below is the process for training model for Plant Disease Identification System:
 
 # Mermaid diagram as image
 
-st_mermaid('''graph TD
-    A[Start] --> B[Load Dataset from Folder]
-    B --> C[Apply Transforms<br>Resize, Flip, Rotate, Normalize]
-    C --> D[ImageFolder Dataset]
-    D --> E[DataLoader with Batch Size 8]
-    E --> F[Load Pretrained ResNet50]
-    F --> G[Freeze All Layers]
-    G --> H[Replace Final FC Layer<br>Linear -> ReLU -> Dropout -> Linear]
+st_mermaid("""flowchart TD
+    A[Start Training]
+    B[Train for N Epochs]
 
-    H --> I[Move Model to Device CPU/GPU]
-    I --> J[Define Loss Function - CrossEntropyLoss]
-    J --> K[Define Optimizer - Adam on FC params]
+    subgraph Epoch Loop
+        C[For each batch]
+        D[Load & process images and labels]
+        E[Model predicts class probabilities]
+        F[Calculate loss and accuracy]
+        G[Update classifier weights based on loss]
+    end
 
-    K --> L[Training Loop]
-    L --> M[For each batch:<br>Forward Pass -> Loss -> Backward -> Optimizer Step]
-    M --> N[Calculate Loss and Accuracy]
+    H[After each epoch: Report training loss and accuracy]
+    I[End Training]
 
-    N --> O[Save Trained Model to .pth]
-
-    O --> P[Load Trained Model - Optional]
-    P --> Q[Model.eval for Inference]
-
-    Q --> R[Preprocess Image<br>Resize, Normalize, ToTensor]
-    R --> S[Run Inference<br>model - input_tensor]
-    S --> T[Get Predicted Class]
-
-    T --> V[End]
-''', zoom = False, pan = False)
+    %% Connections
+    A --> B --> C
+    C --> D --> E --> F --> G
+    G --> C
+    C --> H
+    H --> B
+    B --> I
+""", zoom = False, pan = False)
 
 
 subheader("Technologies Used")
-st.markdown("""
+st.markdown(f"""
 
 :grey[Frontend:] Streamlit
 
@@ -146,3 +168,5 @@ st.markdown("""
 <br>
 <br>
 <center>@2025 Plant Disease Identification System (PDIS)</center>""", unsafe_allow_html = True)
+
+
