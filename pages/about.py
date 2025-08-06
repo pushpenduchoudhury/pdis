@@ -141,6 +141,19 @@ st_mermaid("""flowchart TD
 """, zoom = False, pan = False)
 
 
+st.markdown("""
+##### :grey[**Notes:**]
+
+> Only 1 epoch was executed owing to limited time and compute resources, resulting in a model accuracy of about 12%.
+
+> Higher accuracy can be achieved with more training epochs and improved hardware support
+
+<br>
+
+<br>
+
+""", unsafe_allow_html = True)
+
 subheader("Technologies Used")
 st.markdown(f"""
 
@@ -155,15 +168,8 @@ st.markdown(f"""
 :grey[Utility:] dotenv | Pathlib
 """)
 
-# Final Notes
-subheader("Final Notes")
+
 st.markdown("""
-
-> Higher accuracy can be achieved with more training epochs and improved hardware support.
-
-> More plant types and diseases can be added to the dataset to increase scope.
-
-> PDIS can be deployed to cloud platforms for field-level integration.
 
 <br>
 <br>
